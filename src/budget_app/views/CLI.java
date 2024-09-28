@@ -1,8 +1,10 @@
 package budget_app.views;
 
+import budget_app.models.Transaction;
 import budget_app.models.User;
 import budget_app.services.UserService;
 
+import java.math.BigDecimal;
 import java.util.Scanner;
 
 public class CLI {
@@ -131,7 +133,7 @@ public class CLI {
             switch(userResponse()) {
                 case "1" -> { addUserMenuInt();} //Add User Info
                 case "2" -> { updateUsersInfo();} //Update User Info
-                case "3" -> {} //Add Transaction
+                case "3" -> { addTransaction();} //Add Transaction
                 case "4" -> {} //Update Transaction
                 case "5" -> {} //Delete Transaction
                 case "6" -> {} //Delete User (which will consequently delete user's transaction)
@@ -144,8 +146,52 @@ public class CLI {
 
     }
 
+    private void addTransaction() {
+        String[] response;
+
+        while (true) {
+            System.out.println("Please enter transactions in order seperated by comma:");
+            response = userResponse().split(",");
+            if (response.length == 7) {
+                break;
+            }
+        }
+
+        var transaction = Transaction.builder()
+                .userId(Integer.parseInt(response[0]))
+                .accountId(Integer.parseInt(response[1]))
+                .categoryId(Integer.parseInt(response[2]))
+                .currency(response[3])
+                .amount(BigDecimal.valueOf(Double.parseDouble(response[4])))
+                .transType(response[5])
+                .notes(response[6])
+                .build();
+
+        var transactionId = UserService.addUserTransaction(transaction);
+        System.out.println("transactionId: " + transactionId);
+
+    }
+
     private void updateUsersInfo() {
-        UserService.updateUser("");
+        String[] response;
+
+        while (true) {
+            System.out.println("Please enter userId and user fields (username,firstname,lastname,email) in order that you want updated, seperated by comma:");
+            response = userResponse().split(",");
+            //userId,eche,null,obum@gmail.com
+            //at least the userid, fields not required are left with null
+            if (response.length == 5) {
+                break;
+            }
+        }
+
+        var user = User.builder().withUsername(response[1].equals("null") ? null : response[1])
+                .withFirstname(response[2].equals("null") ? null : response[2])
+                .withLastname(response[3].equals("null") ? null : response[3])
+                .withEmail(response[4].equals("null") ? null : response[4])
+                .build();
+
+        UserService.updateUser(user, Integer.parseInt(response[0]));
     }
 
     private void addUserMenuInt() {
